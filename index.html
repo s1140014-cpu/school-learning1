@@ -1,1 +1,1045 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<link rel="icon" href="./favicon.ico">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全學段學習挑戰站</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#172033;--muted:#64748b;--line:#dce4ef;--blue:#315efb;--blue2:#eaf0ff;--green:#16845b;--red:#c53d50;--gold:#f4b740}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
+header{background:linear-gradient(120deg,#152a67,#315efb);color:white;padding:26px 16px 30px}
+.wrap{max-width:1080px;margin:auto;padding:0 16px}h1{margin:0;font-size:clamp(25px,4vw,36px)}header p{margin:8px 0 0;color:#e4eaff}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.tab,button,a.btn{border:0;border-radius:12px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.tab{background:#ffffff20;color:white}.tab.active{background:white;color:#1c347f}
+main{padding:22px 0 40px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 5px 18px #1b31500a}.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-6{grid-column:span 6}.span-4{grid-column:span 4}
+h2{font-size:20px;margin:0 0 12px}h3{margin:0 0 8px;font-size:17px}.muted{color:var(--muted);font-size:14px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{padding:13px;background:#f5f7ff;border-radius:14px}.stat strong{display:block;font-size:25px;color:#274bd4}
+label{display:block;font-weight:700;font-size:14px;margin:10px 0 5px}select,input,textarea{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:11px;background:white;color:var(--ink);font:inherit}button.primary,a.btn.primary{background:var(--blue);color:white}button.secondary,a.btn.secondary{background:var(--blue2);color:#2447b8}button.ghost{background:#eef2f7;color:#263449}button.danger{background:#fff0f1;color:var(--red)}button:disabled{opacity:.5;cursor:not-allowed}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.subjects{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px;margin-top:12px}.subject{border:1px solid var(--line);padding:12px;border-radius:12px;background:white;text-align:left}.subject.selected{border-color:var(--blue);background:var(--blue2);color:#1e40af}
+.question{padding:16px;border:1px solid var(--line);border-radius:14px;margin:12px 0}.option{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;cursor:pointer;font-weight:400}.option input{width:auto;margin-top:5px}.option:has(input:checked){border-color:var(--blue);background:var(--blue2)}.feedback{padding:12px;border-radius:10px;margin-top:10px}.correct{background:#e7f8ef;color:#12633f}.incorrect{background:#fff0f1;color:#9d2335}.pill{display:inline-block;padding:4px 9px;border-radius:99px;background:#eef2ff;color:#3449ad;font-size:12px;font-weight:800}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line)}th{font-size:13px;color:var(--muted)}.rank{font-weight:800;color:#274bd4}.hidden{display:none!important}footer{padding:20px 0;color:var(--muted);font-size:13px}
+.notice{background:#fff8e6;border:1px solid #f3dda0;padding:12px;border-radius:12px;color:#6c5014}.empty{padding:22px;text-align:center;color:var(--muted)}
+@media(max-width:700px){.span-8,.span-6,.span-4{grid-column:span 12}.stats{grid-template-columns:repeat(3,1fr)}.stat strong{font-size:21px}th,td{padding:8px;font-size:13px}}
 
+#loginScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#152a67,#315efb);display:flex;align-items:center;justify-content:center;padding:18px}
+.login-card{width:min(100%,460px);background:#fff;border-radius:22px;padding:26px;box-shadow:0 20px 60px #07143f55}.login-card h2{font-size:25px}.role-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px}.role-switch button{padding:12px}.login-warning{font-size:12px;color:#8a4b00;background:#fff8e6;padding:10px;border-radius:10px;margin-top:12px}
+#logoutBtn{margin-left:auto;background:#fff;color:#1c347f}
+@media(max-width:700px){#logoutBtn{margin-left:0}}
+</style>
+</head>
+<body>
+<section id="loginScreen">
+ <div class="login-card">
+  <h2>🔐 全學段學習挑戰站</h2><p class="muted">請選擇身分並登入。教師可管理題庫，學生可參加測驗。</p>
+  <div class="role-switch"><button class="primary" id="chooseStudent" type="button">🎒 學生端</button><button class="secondary" id="chooseTeacher" type="button">🧑‍🏫 教師端</button></div>
+  <label for="loginUser">電子郵件</label><input id="loginUser" type="email" autocomplete="email" placeholder="name@example.com" required>
+  <label for="loginPass">密碼（至少 8 個字元）</label><input id="loginPass" type="password" autocomplete="current-password" minlength="8" placeholder="輸入密碼">\n  <label for="displayName">顯示名稱（註冊時填寫）</label><input id="displayName" autocomplete="nickname" placeholder="例如：小明">
+<div class="actions">
+  <button class="primary" id="loginBtn" type="button">登入</button>
+  <button class="secondary" id="registerBtn" type="button">建立學生帳號</button>
+  <button class="secondary" id="resetPasswordBtn" type="button">忘記密碼</button>
+  <button class="secondary" id="resendVerificationBtn" type="button">重新寄送驗證信</button>
+</div>
+  <p id="loginMsg" class="muted"></p>
+  <div class="login-warning">使用 Supabase 電子郵件登入。新註冊帳號預設為學生；教師權限必須由管理者在資料庫授予。請勿把 Secret key 或 service_role 金鑰放進網站。</div>
+ </div>
+</section>
+<header><div class="wrap">
+<h1>📚 全學段學習挑戰站</h1>
+<p>國小・國中・高中｜教師端題庫管理、學生端測驗、答案解析、錯題重練與積分</p>
+<nav>
+<button class="tab active" data-page="home">學習首頁</button>
+<button class="tab" data-page="quiz">開始測驗</button>
+<button class="tab" data-page="wrong">錯題重練</button>
+<button class="tab" data-page="ranking">積分排名</button>
+<button class="tab" data-page="manage" id="manageTab">教師題庫管理</button><button id="logoutBtn" class="tab" type="button">登出</button>
+</nav></div></header>
+<main class="wrap">
+<section id="page-home" class="page">
+<div class="grid">
+<div class="card span-8">
+<h2>歡迎回來！</h2><p class="muted">先選擇學習階段與科目，再開始今天的挑戰。</p>
+<label for="nickname">你的暱稱（排行榜顯示名稱）</label><input id="nickname" maxlength="18" placeholder="例如：星星同學">
+<div class="grid" style="margin-top:8px">
+<div class="span-6"><label for="grade">學習階段／年級</label><select id="grade">
+<option>國小一年級</option><option>國小二年級</option><option>國小三年級</option><option>國小四年級</option><option>國小五年級</option><option>國小六年級</option>
+<option>國中七年級</option><option selected>國中八年級</option><option>國中九年級</option>
+<option>高中一年級</option><option>高中二年級</option><option>高中三年級</option></select></div>
+<div class="span-6"><label for="subject">科目</label><select id="subject"><option>數學</option><option>英文</option><option>自然</option><option>國文</option><option>社會</option></select></div>
+<div class="span-6"><label for="questionCount">每回測驗題數</label><select id="questionCount"><option value="5">5 題</option><option value="10" selected>10 題</option><option value="15">15 題</option><option value="20">20 題</option><option value="30">30 題</option><option value="all">全部符合題目</option></select></div>
+</div>
+<div class="actions"><button class="primary" id="startHome">開始測驗 →</button><a class="btn secondary" href="https://adl.edu.tw/HomePage/home/" target="_blank" rel="noopener">開啟因材網 ↗</a></div>
+</div>
+<div class="card span-4"><h2>我的學習紀錄</h2><div class="stats">
+<div class="stat"><span class="muted">總積分</span><strong id="points">0</strong></div>
+<div class="stat"><span class="muted">完成測驗</span><strong id="tests">0</strong></div>
+<div class="stat"><span class="muted">待重練</span><strong id="wrongCount">0</strong></div>
+</div><p class="muted">紀錄保存在目前瀏覽器。清除瀏覽器資料或更換裝置可能會讓紀錄消失，記得定期匯出備份。</p></div>
+<div class="card span-12"><h2>今日學習任務 ✨</h2><p id="dailyText">完成一回測驗，答對題目累積積分。</p><div class="actions"><button class="secondary" id="dailyBtn">開始每日挑戰</button><button class="ghost" id="exportProgress">匯出我的紀錄備份</button><label class="btn ghost" style="margin:0">匯入紀錄備份<input id="importProgress" type="file" accept=".json,application/json" hidden></label></div></div>
+<div class="card span-12"><h2>因材網題庫連結方式</h2><div class="notice">目前版本不會自動抓取因材網登入後的題目，也不會讀取你的帳號密碼。請在因材網使用你有權限的功能取得可使用的題目，再用「題庫管理」匯入 JSON 題庫。若題目只提供預覽／列印，請確認授權與使用規範後再整理。</div><p class="muted">官方入口：<a href="https://adl.edu.tw/HomePage/home/" target="_blank" rel="noopener">https://adl.edu.tw/HomePage/home/</a>。因材網的可用科目與年級依官方實際提供內容及帳號權限為準；高中或特定科目不保證有完整題庫。</p></div>
+</div></section>
+<section id="page-quiz" class="page hidden">
+<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><div><h2 id="quizTitle">測驗</h2><p class="muted" id="quizMeta"></p></div><span class="pill" id="progressPill">準備開始</span></div>
+<div id="quizArea"></div><div class="actions"><button id="submitQuiz" class="primary">交卷並看解析</button><button id="nextQuiz" class="secondary hidden">再做一回</button><button id="toWrong" class="ghost">前往錯題重練</button></div><p class="muted" id="quizMessage"></p></div>
+</section>
+<section id="page-wrong" class="page hidden"><div class="card"><h2>🔁 錯題重練</h2><p class="muted">答對後會從待重練清單移除；重練答對每題加 5 分。</p><div id="wrongArea"></div><div class="actions"><button class="primary" id="startWrong">開始重練</button><button class="ghost" id="clearWrong">清除錯題清單</button></div></div></section>
+<section id="page-ranking" class="page hidden"><div class="card"><h2>🏆 積分排行榜</h2><p class="muted">此排行榜只統計目前這個瀏覽器儲存的玩家。若要讓不同裝置／不同玩家共同排名，需要另外架設具備登入與資料庫的後端服務。</p><div class="grid"><div class="span-6"><label for="rankPeriod">排行榜類型</label><select id="rankPeriod"><option value="all">累積總積分</option><option value="week">本週積分</option><option value="day">今日積分</option></select></div><div class="span-6"><label for="rankStage">學習階段</label><select id="rankStage"><option value="all">全部階段</option><option value="國小">國小</option><option value="國中">國中</option><option value="高中">高中</option></select></div></div><div id="rankArea"></div></div></section>
+<section id="page-manage" class="page hidden"><div class="grid"><div class="card span-6"><h2>匯入題庫 JSON</h2><p class="muted">可以匯入你有權使用的題目。匯入題目會加入目前題庫。</p><label for="questionFile">選擇 JSON 檔案</label><input id="questionFile" type="file" accept=".json,application/json"><div class="actions"><button class="primary" id="importQuestions">匯入題庫</button><button class="secondary" id="downloadTemplate">下載範例題庫格式</button></div><p id="importMessage" class="muted"></p></div>
+<div class="card span-12" id="aiQuestionCard">
+  <h2>🤖 AI 自動出題</h2>
+  <p class="muted">設定年級、科目與難度，讓 AI 產生選擇題與解析；確認後會加入目前題庫，學生即可作答。</p>
+  <div class="grid">
+    <div class="span-4"><label for="aiStage">學習階段</label><select id="aiStage"><option>國小</option><option selected>國中</option><option>高中</option></select></div>
+    <div class="span-4"><label for="aiGrade">年級</label><select id="aiGrade"><option>國小一年級</option><option>國小二年級</option><option>國小三年級</option><option>國小四年級</option><option>國小五年級</option><option>國小六年級</option><option>國中七年級</option><option selected>國中八年級</option><option>國中九年級</option><option>高中一年級</option><option>高中二年級</option><option>高中三年級</option></select></div>
+    <div class="span-4"><label for="aiSubject">科目</label><select id="aiSubject"><option>數學</option><option>英文</option><option>自然</option><option>國文</option><option>社會</option><option>資訊</option><option>其他</option></select></div>
+    <div class="span-4"><label for="aiCount">出題數量</label><select id="aiCount"><option value="5">5 題</option><option value="10" selected>10 題</option><option value="15">15 題</option><option value="20">20 題</option></select></div>
+    <div class="span-4"><label for="aiDifficulty">難度</label><select id="aiDifficulty"><option>簡單</option><option selected>中等</option><option>困難</option><option>混合</option></select></div>
+    <div class="span-4"><label for="aiType">題型</label><select id="aiType"><option value="single">四選一</option><option value="truefalse">是非題</option></select></div>
+    <div class="span-12"><label for="aiTopic">單元／主題（選填）</label><input id="aiTopic" placeholder="例如：一元一次方程式、光合作用、英文現在完成式"></div>
+  </div>
+  <div class="actions"><button class="primary" id="aiGenerateBtn" type="button">✨ AI 產生題目</button></div>
+  <p id="aiQuestionMsg" class="muted" role="status" aria-live="polite">使用 Cloudflare Workers AI 免費額度；需部署更新後的 ai-generate-questions Edge Function。Cloudflare API Token 只放在 Supabase Secrets，勿放進 HTML。</p>
+  <div id="aiQuestionPreview"></div>
+  <div class="actions"><button class="secondary hidden" id="aiSaveBtn" type="button">加入題庫</button><button class="ghost hidden" id="aiDiscardBtn" type="button">捨棄預覽</button></div>
+</div>
+
+<div class="card span-6"><h2>目前題庫</h2><div class="stats"><div class="stat"><span class="muted">題目總數</span><strong id="bankCount">0</strong></div><div class="stat"><span class="muted">自訂題目</span><strong id="customCount">0</strong></div><div class="stat"><span class="muted">科目數</span><strong>5</strong></div></div><div class="actions"><button class="secondary" id="exportQuestions">匯出目前題庫</button><button class="danger" id="resetQuestions">還原內建題庫</button></div></div>
+<div class="card span-12"><h2>超大型題庫規劃：100,000,000,000 題</h2><div class="notice">網站已保留大量題庫匯入／匯出功能，但 1,000 億題不能直接塞進單一 HTML 或瀏覽器儲存空間。正式規模需要伺服器、資料庫、分批載入、索引與題目生成服務。以下示範版可管理你匯入的題目，並非已內建 1,000 億道人工編寫題目。</div></div><div class="card span-12"><h2>題庫 JSON 格式</h2><p class="muted">每題需包含 stage、grade、subject、question、options、answer、explanation。answer 是 options 的從 0 開始索引（第一個選項為 0）。</p><pre style="white-space:pre-wrap;background:#f4f6fb;padding:12px;border-radius:10px;overflow:auto">[
+  {
+    "stage": "國中",
+    "grade": "國中八年級",
+    "subject": "數學",
+    "question": "若 2x + 3 = 11，則 x =？",
+    "options": ["2", "3", "4", "7"],
+    "answer": 2,
+    "explanation": "兩邊同減 3 得 2x=8，再除以 2，x=4。",
+    "source": "自編練習題"
+  }
+]</pre></div></div></section>
+</main>
+<footer class="wrap">全學段學習挑戰站｜示範版題目為自編練習題，不代表因材網官方題庫。GitHub Pages 可託管此靜態網站，但跨裝置同步與真實多人排行榜需要後端資料庫。</footer>
+<script>
+const KEY='studyChallenge_v1';
+let chosenRole='student', activeUser=null;
+function setRole(role){chosenRole=role;document.querySelector('#chooseStudent').className=role==='student'?'primary':'secondary';document.querySelector('#chooseTeacher').className=role==='teacher'?'primary':'secondary';document.querySelector('#registerBtn').classList.toggle('hidden',role!=='student');document.querySelector('#displayName').classList.toggle('hidden',role!=='student');document.querySelector('#loginMsg').textContent=role==='teacher'?'教師請使用已獲授權的電子郵件帳號登入。':'學生可註冊、測驗、累積積分與複習錯題。'}
+document.querySelector('#chooseStudent').onclick=()=>setRole('student');
+document.querySelector('#chooseTeacher').onclick=()=>setRole('teacher');
+function enterApp(user,role){activeUser={user,role};sessionStorage.setItem('studyChallenge_session',JSON.stringify(activeUser));document.querySelector('#loginScreen').classList.add('hidden');document.querySelector('#manageTab').classList.toggle('hidden',role!=='teacher');document.querySelector('#nickname').value=user;localStorage.setItem('studyNickname',user);document.querySelector('header p').textContent=`${role==='teacher'?'教師端':'學生端'}｜目前帳號：${user}｜國小・國中・高中全學段學習挑戰站`;go('home')}
+document.querySelector('#logoutBtn').onclick=async()=>{try{await window.studySupabase?.auth.signOut()}catch(e){}sessionStorage.removeItem('studyChallenge_session');activeUser=null;document.querySelector('#loginScreen').classList.remove('hidden');document.querySelector('#loginPass').value='';setRole('student')};
+setRole('student');
+const defaultQuestions=[
+{stage:'國小',grade:'國小五年級',subject:'數學',question:'一盒彩色筆有 12 枝，買了 3 盒共有幾枝？',options:['15 枝','24 枝','36 枝','48 枝'],answer:2,explanation:'12 × 3 = 36，所以共有 36 枝。',source:'自編練習題'},
+{stage:'國小',grade:'國小四年級',subject:'英文',question:'“apple” 的中文意思是什麼？',options:['香蕉','蘋果','橘子','葡萄'],answer:1,explanation:'apple 是「蘋果」。',source:'自編練習題'},
+{stage:'國小',grade:'國小六年級',subject:'自然',question:'植物通常透過哪個部位吸收土壤中的水分？',options:['花瓣','果實','根','種子'],answer:2,explanation:'根能從土壤中吸收水分和礦物質。',source:'自編練習題'},
+{stage:'國小',grade:'國小三年級',subject:'國文',question:'「守株待兔」主要用來比喻什麼？',options:['努力學習','只想不勞而獲','樂於助人','遵守約定'],answer:1,explanation:'這個成語提醒人不要只靠僥倖等待收穫。',source:'自編練習題'},
+{stage:'國小',grade:'國小五年級',subject:'社會',question:'臺灣位於哪個大洲的東側海域？',options:['歐洲','非洲','亞洲','南美洲'],answer:2,explanation:'臺灣位於亞洲東側，西太平洋附近。',source:'自編練習題'},
+{stage:'國中',grade:'國中八年級',subject:'數學',question:'若 2x + 3 = 11，則 x =？',options:['2','3','4','7'],answer:2,explanation:'兩邊同減 3 得 2x=8，再除以 2，x=4。',source:'自編練習題'},
+{stage:'國中',grade:'國中七年級',subject:'英文',question:'Choose the correct sentence.',options:['She like music.','She likes music.','She liking music.','She is like music.'],answer:1,explanation:'一般現在式中，主詞為第三人稱單數 she，動詞通常加 -s：likes。',source:'自編練習題'},
+{stage:'國中',grade:'國中八年級',subject:'自然',question:'水在標準大氣壓下的沸點約為多少？',options:['0°C','50°C','100°C','150°C'],answer:2,explanation:'標準大氣壓下，純水沸點約為 100°C。',source:'自編練習題'},
+{stage:'國中',grade:'國中七年級',subject:'國文',question:'「他跑得像風一樣快」主要使用哪種修辭？',options:['譬喻','排比','設問','誇飾以外的借代'],answer:0,explanation:'把跑得快比作風，使用「像」連結，是譬喻。',source:'自編練習題'},
+{stage:'國中',grade:'國中九年級',subject:'社會',question:'民主政治中，人民通常透過哪種方式選出民意代表？',options:['世襲','選舉','抽籤決定所有職位','由企業指派'],answer:1,explanation:'定期、公平的選舉是民主政治的重要制度之一。',source:'自編練習題'},
+{stage:'高中',grade:'高中一年級',subject:'數學',question:'若 f(x)=x²，則 f(3) 等於多少？',options:['6','9','3','12'],answer:1,explanation:'將 x=3 代入 f(x)=x²，得到 3²=9。',source:'自編練習題'},
+{stage:'高中',grade:'高中一年級',subject:'英文',question:'Choose the closest meaning of “rapid”.',options:['slow','quick','quiet','careful'],answer:1,explanation:'rapid 的意思是「快速的」，最接近 quick。',source:'自編練習題'},
+{stage:'高中',grade:'高中一年級',subject:'自然',question:'細胞中主要負責合成蛋白質的構造是？',options:['核糖體','液泡','細胞壁','中心體'],answer:0,explanation:'核糖體是蛋白質合成的重要場所。',source:'自編練習題'},
+{stage:'高中',grade:'高中一年級',subject:'國文',question:'閱讀論說文時，最應優先辨認什麼？',options:['作者的主張與論據','每個字的筆畫','標點符號數量','段落長度'],answer:0,explanation:'論說文以提出主張並使用論據支持為核心。',source:'自編練習題'},
+{stage:'高中',grade:'高中一年級',subject:'社會',question:'在市場中，其他條件不變時，商品價格上升通常會使需求量如何變化？',options:['增加','減少','一定不變','變成供給量'],answer:1,explanation:'一般需求法則指出，價格上升時需求量通常下降；其他條件不變。',source:'自編練習題'}
+];
+let state=loadState(), bank=state.bank?.length?state.bank:defaultQuestions.slice(), current=[], mode='normal', answered=false, selected={};
+function loadState(){try{return JSON.parse(localStorage.getItem(KEY))||{points:0,tests:0,wrong:[],history:[],players:[],bank:[]}}catch(e){return {points:0,tests:0,wrong:[],history:[],players:[],bank:[]}}}
+function save(){state.bank=bank;localStorage.setItem(KEY,JSON.stringify(state));renderStats();renderWrong();renderRanking()}
+function stageOf(g){return g.startsWith('國小')?'國小':g.startsWith('國中')?'國中':'高中'}
+function playerName(){return (document.querySelector('#nickname').value.trim()||localStorage.getItem('studyNickname')||'學習者').slice(0,18)}
+function getGrade(){return document.querySelector('#grade').value}
+function getSubject(){return document.querySelector('#subject').value}
+function go(page){if(page==='manage'&&activeUser?.role!=='teacher'){alert('只有教師端可以進入題庫管理。');return}document.querySelectorAll('.page').forEach(x=>x.classList.toggle('hidden',x.id!=='page-'+page));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.page===page));if(page==='wrong')renderWrong();if(page==='ranking')renderRanking();window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>go(b.dataset.page));
+document.querySelector('#nickname').value=localStorage.getItem('studyNickname')||'';
+document.querySelector('#nickname').addEventListener('change',e=>localStorage.setItem('studyNickname',e.target.value.trim().slice(0,18)));
+function renderStats(){document.querySelector('#points').textContent=state.points||0;document.querySelector('#tests').textContent=state.tests||0;document.querySelector('#wrongCount').textContent=(state.wrong||[]).length;document.querySelector('#bankCount').textContent=bank.length;document.querySelector('#customCount').textContent=bank.filter(q=>q.source!=='自編練習題').length;document.querySelector('#dailyText').textContent=`今日累積 ${todayPoints()} 分。完成測驗持續練習，逐步提升正確率！`}
+function todayPoints(){let d=new Date().toLocaleDateString('sv-SE');return (state.history||[]).filter(h=>h.date===d).reduce((s,h)=>s+h.earned,0)}
+function startQuiz(kind='normal'){
+mode=kind;answered=false;selected={};let g=getGrade(),s=getSubject(), stage=stageOf(g);
+let pool=bank.filter(q=>kind==='wrong'?(state.wrong||[]).some(w=>w.key===qKey(w))&&false:true);
+if(kind==='wrong'){let keys=new Set(state.wrong.map(w=>w.key));pool=bank.filter(q=>keys.has(qKey(q)))}
+else pool=bank.filter(q=>(q.grade===g||q.stage===stage)&&q.subject===s);
+if(!pool.length){document.querySelector('#quizTitle').textContent=kind==='wrong'?'錯題重練':'尚無符合的題目';document.querySelector('#quizMeta').textContent='請先匯入此年級／科目的題庫，或改選其他年級與科目。';document.querySelector('#quizArea').innerHTML='<div class="empty">目前沒有符合條件的題目。你可以到「題庫管理」匯入自己的題庫。</div>';document.querySelector('#submitQuiz').classList.add('hidden');document.querySelector('#nextQuiz').classList.add('hidden');go('quiz');return}
+const countChoice=document.querySelector('#questionCount')?.value||'10';
+const requested=countChoice==='all'?pool.length:Number(countChoice);
+current=pool.sort(()=>Math.random()-.5).slice(0,Math.min(requested,pool.length));
+document.querySelector('#quizTitle').textContent=kind==='wrong'?'錯題重練':kind==='daily'?'每日挑戰':'開始測驗';document.querySelector('#quizMeta').textContent=`${g}｜${s}｜共 ${current.length} 題`;document.querySelector('#progressPill').textContent=`${current.length} 題`;document.querySelector('#submitQuiz').classList.remove('hidden');document.querySelector('#nextQuiz').classList.add('hidden');document.querySelector('#quizMessage').textContent='';
+document.querySelector('#quizArea').innerHTML=current.map((q,i)=>`<div class="question" data-q="${i}"><h3>${i+1}. ${esc(q.question)}</h3>${q.options.map((o,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}"><span>${esc(o)}</span></label>`).join('')}<div class="feedback hidden" id="fb${i}"></div></div>`).join('');
+go('quiz')
+}
+function qKey(q){return [q.grade,q.subject,q.question].join('::')}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.querySelector('#startHome').onclick=()=>startQuiz();document.querySelector('#dailyBtn').onclick=()=>startQuiz('daily');document.querySelector('#toWrong').onclick=()=>go('wrong');document.querySelector('#startWrong').onclick=()=>startQuiz('wrong');
+document.querySelector('#submitQuiz').onclick=()=>{
+ if(answered)return;let score=0,correct=0,earned=0;let date=new Date().toLocaleDateString('sv-SE');
+ current.forEach((q,i)=>{let el=document.querySelector(`input[name="q${i}"]:checked`),v=el?Number(el.value):-1,ok=v===Number(q.answer);if(ok){correct++;score+=10;earned+=mode==='wrong'?5:10;state.wrong=state.wrong.filter(w=>w.key!==qKey(q))}else if(!state.wrong.some(w=>w.key===qKey(q)))state.wrong.push({key:qKey(q),grade:q.grade,subject:q.subject,question:q.question,options:q.options,answer:q.answer,explanation:q.explanation,source:q.source});
+let fb=document.querySelector('#fb'+i);fb.classList.remove('hidden');fb.classList.add(ok?'correct':'incorrect');fb.innerHTML=`<strong>${ok?'答對了！':'正確答案：'+esc(q.options[q.answer])}</strong><br>${esc(q.explanation||'目前沒有提供解析。')}`;
+document.querySelectorAll(`input[name="q${i}"]`).forEach(x=>x.disabled=true);
+});
+let completion=20;earned+=completion;state.points=(state.points||0)+earned;state.tests=(state.tests||0)+1;state.history.push({name:playerName(),grade:getGrade(),stage:stageOf(getGrade()),subject:getSubject(),date,correct,total:current.length,earned,score});
+const name=playerName();let p=state.players.find(x=>x.name===name&&x.stage===stageOf(getGrade()));if(!p){p={name,stage:stageOf(getGrade()),points:0,day:{},week:{}};state.players.push(p)}p.points+=earned;p.day[date]=(p.day[date]||0)+earned;
+let now=new Date(),monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));let weekKey=monday.toLocaleDateString('sv-SE');p.week[weekKey]=(p.week[weekKey]||0)+earned;
+if(mode==='daily'&&localStorage.getItem('dailyDone')!==date){earned+=10;state.points+=10;p.points+=10;p.day[date]+=10;p.week[weekKey]+=10;state.history[state.history.length-1].earned+=10;localStorage.setItem('dailyDone',date)}
+answered=true;document.querySelector('#submitQuiz').classList.add('hidden');document.querySelector('#nextQuiz').classList.remove('hidden');document.querySelector('#progressPill').textContent=`答對 ${correct}/${current.length}`;document.querySelector('#quizMessage').textContent=`本回答對 ${correct} 題，獲得 ${earned} 分（包含完成獎勵）。`;save()
+};
+document.querySelector('#nextQuiz').onclick=()=>startQuiz(mode);
+function renderWrong(){let area=document.querySelector('#wrongArea');if(!state.wrong?.length){area.innerHTML='<div class="empty">太好了！目前沒有待重練錯題。</div>';return}area.innerHTML=state.wrong.map((q,i)=>`<div class="question"><span class="pill">${esc(q.grade)}｜${esc(q.subject)}</span><p><strong>${i+1}. ${esc(q.question)}</strong></p><p class="muted">已加入錯題清單，按「開始重練」再試一次。</p></div>`).join('')}
+document.querySelector('#clearWrong').onclick=()=>{if(confirm('確定清除全部錯題清單？')){state.wrong=[];save()}};
+function renderRanking(){let period=document.querySelector('#rankPeriod').value,stage=document.querySelector('#rankStage').value,now=new Date(),date=now.toLocaleDateString('sv-SE'),monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));let wk=monday.toLocaleDateString('sv-SE');let rows=(state.players||[]).filter(p=>stage==='all'||p.stage===stage).map(p=>({name:p.name,stage:p.stage,points:period==='day'?(p.day?.[date]||0):period==='week'?(p.week?.[wk]||0):p.points||0})).sort((a,b)=>b.points-a.points);document.querySelector('#rankArea').innerHTML=rows.length?`<table><thead><tr><th>排名</th><th>暱稱</th><th>學段</th><th>積分</th></tr></thead><tbody>${rows.map((p,i)=>`<tr><td class="rank">${i+1}</td><td>${esc(p.name)}</td><td>${esc(p.stage)}</td><td><strong>${p.points}</strong></td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無排行榜紀錄。先輸入暱稱並完成一回測驗吧！'}
+document.querySelector('#rankPeriod').onchange=renderRanking;document.querySelector('#rankStage').onchange=renderRanking;
+function download(name,data){let blob=new Blob([data],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
+document.querySelector('#downloadTemplate').onclick=()=>download('題庫範例.json',JSON.stringify([{stage:'國中',grade:'國中八年級',subject:'數學',question:'若 2x+3=11，x=?',options:['2','3','4','7'],answer:2,explanation:'先減 3 再除以 2，得 x=4。',source:'自編題目'}],null,2));
+document.querySelector('#importQuestions').onclick=async()=>{let f=document.querySelector('#questionFile').files[0];if(!f){document.querySelector('#importMessage').textContent='請先選擇 JSON 檔案。';return}try{let data=JSON.parse(await f.text());if(!Array.isArray(data)||!data.every(q=>q.question&&Array.isArray(q.options)&&Number.isInteger(Number(q.answer))&&q.options[Number(q.answer)]!==undefined&&q.subject&&q.grade)){throw Error('格式不正確：請確認每題都有 grade、subject、question、options、answer。')}let valid=data.map(q=>({...q,stage:q.stage||stageOf(q.grade),answer:Number(q.answer),source:q.source||'匯入題目'}));bank.push(...valid);state.bank=bank;save();document.querySelector('#importMessage').textContent=`成功匯入 ${valid.length} 題。`; }catch(e){document.querySelector('#importMessage').textContent='匯入失敗：'+e.message}};
+document.querySelector('#exportQuestions').onclick=()=>download('我的題庫.json',JSON.stringify(bank,null,2));
+document.querySelector('#resetQuestions').onclick=()=>{if(confirm('確定還原為內建範例題庫？自訂題目將從目前題庫移除。')){bank=defaultQuestions.slice();state.bank=bank;save()}};
+document.querySelector('#exportProgress').onclick=()=>download('學習紀錄備份.json',JSON.stringify(state,null,2));
+document.querySelector('#importProgress').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let data=JSON.parse(await f.text());if(!data||typeof data!=='object'||!Array.isArray(data.history)||!Array.isArray(data.players))throw Error('這不是有效的學習紀錄備份');if(confirm('匯入備份會取代目前的學習紀錄，是否繼續？')){state={...data};bank=state.bank?.length?state.bank:defaultQuestions.slice();save();alert('備份還原完成。')}}catch(err){alert('還原失敗：'+err.message)}e.target.value=''};
+renderStats();renderWrong();renderRanking();
+</script>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// 請把下面兩個範例值換成你自己的 Project URL 與 Publishable key。
+const SUPABASE_URL = 'https://tfpiyknfvqsgzzhyfhnh.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_XcqHlSUOc5UQqGqvwJUwpQ_NrS2gF4b';
+const msg = (text) => { document.querySelector('#loginMsg').textContent = text; };
+const configReady = SUPABASE_URL.startsWith('https://') &&
+  SUPABASE_PUBLISHABLE_KEY.startsWith('sb_publishable_') &&
+  !SUPABASE_URL.includes('在此貼上') &&
+  !SUPABASE_PUBLISHABLE_KEY.includes('在此貼上');
+
+let supabase = null;
+if (configReady) {
+  supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  window.studySupabase = supabase;
+} else {
+  msg('尚未設定 Supabase 連線資料：請在 index.html 找到 SUPABASE_URL 和 SUPABASE_PUBLISHABLE_KEY 並填入自己的資料。');
+}
+
+async function openAuthenticatedApp(user) {
+  const { data: profile, error } = await supabase
+    .from('profiles').select('display_name, role').eq('id', user.id).single();
+  if (error || !profile) {
+    msg('登入成功，但讀取個人資料失敗。請確認 profiles 資料表與 RLS 設定。');
+    return;
+  }
+  const role = profile.role === 'teacher' ? 'teacher' : 'student';
+  if (window.chosenRole !== undefined && window.chosenRole !== role) {
+    // 身分以資料庫為準，不能由登入頁面的按鈕自行決定。
+  }
+  enterApp(profile.display_name || user.email, role);
+  msg('');
+}
+
+document.querySelector('#registerBtn').onclick = async () => {
+  if (!supabase) return msg('請先在 index.html 設定 Supabase URL 和 Publishable key。');
+  const email = document.querySelector('#loginUser').value.trim();
+  const password = document.querySelector('#loginPass').value;
+  const displayName = document.querySelector('#displayName').value.trim();
+  if (!email || !password || password.length < 8) return msg('請輸入有效電子郵件及至少 8 個字元的密碼。');
+  if (!displayName) return msg('請填寫顯示名稱。');
+  const { data, error } = await supabase.auth.signUp({
+    email, password,
+    options: { data: { display_name: displayName },
+      emailRedirectTo: 'https://s1140014-cpu.github.io/school-learning/' }
+  });
+  if (error) return msg('註冊失敗：' + error.message);
+  if (data.session && data.user) {
+    await openAuthenticatedApp(data.user);
+  } else {
+    msg('註冊已送出！請到電子郵件收取驗證信，完成驗證後再回此網站登入。');
+  }
+};
+
+document.querySelector('#loginBtn').onclick = async () => {
+  if (!supabase) return msg('請先在 index.html 設定 Supabase URL 和 Publishable key。');
+  const email = document.querySelector('#loginUser').value.trim();
+  const password = document.querySelector('#loginPass').value;
+  if (chosenRole === 'teacher') {
+    // 登入後會再從 profiles 讀取實際角色；學生帳號不會因此取得教師權限。
+  }
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) return msg('登入失敗：' + error.message + '。請確認電子郵件已驗證。');
+  await openAuthenticatedApp(data.user);
+};
+
+document.querySelector('#resetPasswordBtn').onclick = async () => {
+  if (!supabase) return msg('請先在 index.html 設定 Supabase URL 和 Publishable key。');
+  const email = document.querySelector('#loginUser').value.trim();
+  if (!email) return msg('請先在電子郵件欄輸入你的電子郵件。');
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname
+  });
+  msg(error ? '寄送重設密碼信失敗：' + error.message : '若此電子郵件已註冊，系統會寄出重設密碼郵件，請查看收件匣。');
+};
+
+if (supabase) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.user) await openAuthenticatedApp(session.user);
+}
+</script>
+<script type="module">
+const supabase = window.studySupabase;
+
+document.querySelector('#resendVerificationBtn').onclick = async () => {
+  const email = document.querySelector('#loginUser').value.trim();
+  const message = document.querySelector('#loginMsg');
+
+  if (!window.studySupabase) {
+    message.textContent = 'Supabase 尚未完成連線，請重新整理頁面後再試。';
+    return;
+  }
+
+  if (!email) {
+    message.textContent = '請先輸入註冊時使用的電子郵件。';
+    return;
+  }
+
+  message.textContent = '正在寄送驗證信……';
+
+  const { error } = await window.studySupabase.auth.resend({
+    type: 'signup',
+    email,
+    options: {
+      emailRedirectTo: 'https://s1140014-cpu.github.io/school-learning/'
+    }
+  });
+
+  message.textContent = error
+    ? '寄送失敗：' + error.message
+    : '已提出寄送請求，請檢查收件匣及垃圾郵件。';
+};
+</script>
+<script>
+(function () {
+  const btn = document.getElementById('logoutBtn');
+
+  if (!btn || btn.dataset.logoutBound === 'true') return;
+  btn.dataset.logoutBound = 'true';
+
+  btn.addEventListener('click', async function () {
+    btn.disabled = true;
+
+    try {
+      const supabase = window.studySupabase;
+
+      if (!supabase) {
+        alert('Supabase 尚未初始化，請重新整理頁面後再試。');
+        return;
+      }
+
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        alert('登出失敗：' + error.message);
+        return;
+      }
+
+      sessionStorage.removeItem('studyChallenge_session');
+      location.reload();
+    } catch (e) {
+      alert('登出發生錯誤：' + e.message);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+})();
+</script>
+
+
+<section id="studentQuiz" style="max-width:850px;margin:24px auto;padding:20px;background:#fff;border:1px solid #dbe3f0;border-radius:16px;color:#172033;font-family:Arial,sans-serif">
+  <h2>📝 學生線上測驗</h2>
+  <p>選擇學習階段、年級、科目及題數，從 Supabase 載入已發布的題目。</p>
+
+  <label for="studentQuizStage">學習階段：</label>
+  <select id="studentQuizStage">
+    <option value="國小" selected>國小</option>
+    <option value="國中">國中</option>
+    <option value="高中">高中</option>
+  </select>
+
+  <label for="studentQuizGrade">年級：</label>
+  <select id="studentQuizGrade">
+    <option value="國小一年級">一年級</option>
+    <option value="國小二年級">二年級</option>
+    <option value="國小三年級" selected>三年級</option>
+    <option value="國小四年級">四年級</option>
+    <option value="國小五年級">五年級</option>
+    <option value="國小六年級">六年級</option>
+  </select>
+
+  <label for="quizSubject">測驗科目：</label>
+  <select id="quizSubject">
+    <option>國文</option>
+    <option>英文</option>
+    <option>數學</option>
+    <option>自然</option>
+    <option>社會</option>
+    <option>資訊</option>
+    <option>其他</option>
+  </select>
+
+  <label for="quizCount">題數：</label>
+  <select id="quizCount">
+    <option value="5">5 題</option>
+    <option value="10" selected>10 題</option>
+    <option value="20">20 題</option>
+  </select>
+
+  <button id="quizStart" type="button" style="padding:10px 16px;background:#315efb;color:white;border:0;border-radius:8px;cursor:pointer">開始測驗</button>
+
+  <p id="quizMessage" role="status" aria-live="polite"></p>
+  <div id="quizQuestions"></div>
+  <button id="quizSubmit" type="button" hidden style="padding:11px 18px;background:#16804a;color:white;border:0;border-radius:8px;cursor:pointer">提交答案</button>
+  <div id="quizResult" role="status" aria-live="polite" style="margin-top:18px"></div>
+</section>
+
+
+  <label for="qbSubject">科目：</label>
+  <select id="qbSubject">
+    <option>國文</option>
+    <option>英文</option>
+    <option selected>數學</option>
+    <option>自然</option>
+    <option>社會</option>
+    <option>資訊</option>
+    <option>其他</option>
+  </select>
+
+  <button id="qbLoad" type="button">載入題目</button>
+  <p id="qbMessage" role="status">準備就緒。</p>
+  <div id="qbQuestions"></div>
+
+  <div style="display:flex;gap:12px;align-items:center;margin-top:16px;">
+    <button id="qbPrev" type="button" disabled>上一頁</button>
+    <span id="qbPage">第 1 頁</span>
+    <button id="qbNext" type="button" disabled>下一頁</button>
+  </div>
+</section>
+
+<script type="module">
+(() => {
+  const client = window.studySupabase;
+  const subjectSelect = document.getElementById('qbSubject');
+  const loadButton = document.getElementById('qbLoad');
+  const prevButton = document.getElementById('qbPrev');
+  const nextButton = document.getElementById('qbNext');
+  const message = document.getElementById('qbMessage');
+  const list = document.getElementById('qbQuestions');
+  const pageLabel = document.getElementById('qbPage');
+
+  if (!subjectSelect || !loadButton || !list) return;
+
+  const pageSize = 20;
+  let page = 0;
+  let total = 0;
+  let busy = false;
+
+  function updateControls() {
+    pageLabel.textContent = `第 ${page + 1} 頁`;
+    prevButton.disabled = busy || page === 0;
+    nextButton.disabled = busy || (page + 1) * pageSize >= total;
+    loadButton.disabled = busy;
+  }
+
+  function addText(parent, tag, text, style) {
+    const el = document.createElement(tag);
+    el.textContent = text;
+    if (style) el.style.cssText = style;
+    parent.appendChild(el);
+    return el;
+  }
+
+  async function loadQuestions() {
+    if (busy) return;
+
+    const client = window.studySupabase;
+    if (!client) {
+      message.textContent = 'Supabase 尚未初始化，請重新整理網站後再試。';
+      return;
+    }
+
+    busy = true;
+    updateControls();
+    message.textContent = '正在載入題目……';
+    list.replaceChildren();
+
+    try {
+      const start = page * pageSize;
+      const end = start + pageSize - 1;
+
+      const { data, error, count } = await client
+        .from('questions')
+        .select(
+          'id, subject, grade, unit, difficulty, question_type, question_text, options',
+          { count: 'exact' }
+        )
+        .eq('status', 'published')
+        .eq('subject', subjectSelect.value)
+        .order('id', { ascending: true })
+        .range(start, end);
+
+      if (error) throw error;
+
+      total = count ?? 0;
+
+      if (!data || data.length === 0) {
+        message.textContent = '這個科目目前沒有已發布的題目。';
+        return;
+      }
+
+      data.forEach((q, index) => {
+        const card = document.createElement('article');
+        card.style.cssText =
+          'margin:14px 0;padding:16px;border:1px solid #ddd;border-radius:10px;';
+
+        addText(
+          card,
+          'h3',
+          `第 ${start + index + 1} 題｜${q.subject}`,
+          'font-size:17px;margin-top:0;'
+        );
+
+        addText(card, 'p', q.question_text);
+
+        if (q.grade || q.unit) {
+          addText(
+            card,
+            'p',
+            [q.grade, q.unit].filter(Boolean).join(' · '),
+            'color:#666;font-size:13px;'
+          );
+        }
+
+        const options = Array.isArray(q.options) ? q.options : [];
+
+        if (options.length) {
+          const ul = document.createElement('ul');
+
+          options.forEach(option => {
+            const li = document.createElement('li');
+
+            if (option && typeof option === 'object') {
+              li.textContent = `${option.key ?? ''} ${option.text ?? ''}`;
+            } else {
+              li.textContent = String(option);
+            }
+
+            ul.appendChild(li);
+          });
+
+          card.appendChild(ul);
+        }
+
+        list.appendChild(card);
+      });
+
+      message.textContent = `共找到 ${total} 題，目前顯示 ${start + 1}–${Math.min(start + data.length, total)} 題。`;
+    } catch (error) {
+      console.error('雲端題庫載入失敗：', error);
+      message.textContent =
+        '載入失敗：' + (error.message || '請確認登入狀態、RLS 政策及資料表設定。');
+    } finally {
+      busy = false;
+      updateControls();
+    }
+  }
+
+  loadButton.addEventListener('click', () => {
+    page = 0;
+    loadQuestions();
+  });
+
+  subjectSelect.addEventListener('change', () => {
+    page = 0;
+    loadQuestions();
+  });
+
+  prevButton.addEventListener('click', () => {
+    if (page > 0 && !busy) {
+      page--;
+      loadQuestions();
+    }
+  });
+
+  nextButton.addEventListener('click', () => {
+    if ((page + 1) * pageSize < total && !busy) {
+      page++;
+      loadQuestions();
+    }
+  });
+
+  loadQuestions();
+})();
+</script>
+
+<section id="studentQuiz" style="max-width:850px;margin:24px auto;padding:20px;background:#fff;border:1px solid #dbe3f0;border-radius:16px;color:#172033;font-family:Arial,sans-serif">
+  <h2>📝 學生線上測驗</h2>
+  <p>選擇科目開始測驗。提交後會顯示成績，不會直接傳回正確答案。</p>
+
+  <label for="quizSubject">測驗科目：</label>
+  <select id="quizSubject" style="padding:10px;border-radius:8px">
+    <option>國文</option>
+    <option>英文</option>
+    <option>數學</option>
+    <option>自然</option>
+    <option>社會</option>
+    <option>資訊</option>
+    <option>其他</option>
+  </select>
+
+  <label for="quizCount">題數：</label>
+  <select id="quizCount" style="padding:10px;border-radius:8px">
+    <option value="5">5 題</option>
+    <option value="10" selected>10 題</option>
+    <option value="20">20 題</option>
+  </select>
+
+  <button id="quizStart" type="button" style="padding:10px 16px;background:#315efb;color:white;border:0;border-radius:8px;cursor:pointer">開始測驗</button>
+
+  <p id="quizMessage" role="status" aria-live="polite"></p>
+  <div id="quizQuestions"></div>
+  <button id="quizSubmit" type="button" hidden style="padding:11px 18px;background:#16804a;color:white;border:0;border-radius:8px;cursor:pointer">提交答案</button>
+  <div id="quizResult" role="status" aria-live="polite" style="margin-top:18px"></div>
+</section>
+
+<script type="module">
+(() => {
+  const root = document.getElementById('studentQuiz');
+  if (!root || root.dataset.initialized) return;
+  root.dataset.initialized = '1';
+
+  const $ = id => document.getElementById(id);
+ const stageSelect = $('studentQuizStage');
+const gradeSelect = $('studentQuizGrade');
+
+const gradeOptions = {
+  國小: ['國小一年級', '國小二年級', '國小三年級', '國小四年級', '國小五年級', '國小六年級'],
+  國中: ['國中七年級', '國中八年級', '國中九年級'],
+  高中: ['高中一年級', '高中二年級', '高中三年級']
+};
+
+stageSelect.addEventListener('change', () => {
+  const grades = gradeOptions[stageSelect.value] || [];
+  gradeSelect.replaceChildren();
+
+  grades.forEach((grade, index) => {
+    const option = document.createElement('option');
+    option.value = grade;
+    option.textContent = grade.replace(stageSelect.value, '');
+    gradeSelect.appendChild(option);
+  });
+});
+  const message = $('quizMessage');
+  const questionsBox = $('quizQuestions');
+  const resultBox = $('quizResult');
+  const startButton = $('quizStart');
+  const submitButton = $('quizSubmit');
+
+  let activeAttempt = null;
+  let activeQuestions = [];
+  let busy = false;
+
+  function say(text) {
+    message.textContent = text;
+  }
+
+  function getSupabase() {
+    // 使用網站原本已初始化的 Supabase client
+    const client = window.studySupabase;
+    if (!client) {
+      throw new Error(
+        '找不到 window.studySupabase。請確認原本的 Supabase 初始化程式已成功執行。'
+      );
+    }
+    return client;
+  }
+
+  function addText(parent, tag, text) {
+    const el = document.createElement(tag);
+    el.textContent = text == null ? '' : String(text);
+    parent.appendChild(el);
+    return el;
+  }
+
+  function getOptions(raw) {
+    if (Array.isArray(raw)) {
+      return raw.map((item, index) => {
+        if (item && typeof item === 'object') {
+          return {
+            value: String(item.value ?? item.key ?? String.fromCharCode(65 + index)),
+            label: String(item.label ?? item.text ?? item.value ?? '')
+          };
+        }
+        return {
+          value: String.fromCharCode(65 + index),
+          label: String(item)
+        };
+      });
+    }
+
+    if (raw && typeof raw === 'object') {
+      return Object.entries(raw).map(([key, value]) => ({
+        value: key,
+        label: String(
+          value && typeof value === 'object'
+            ? (value.text ?? value.label ?? value.value ?? '')
+            : value
+        )
+      }));
+    }
+
+    return [];
+  }
+
+  function renderQuestions() {
+    questionsBox.replaceChildren();
+    resultBox.replaceChildren();
+
+    activeQuestions.forEach((q, index) => {
+      const card = document.createElement('fieldset');
+      card.style.cssText =
+        'margin:16px 0;padding:16px;border:1px solid #dbe3f0;border-radius:12px';
+
+      addText(card, 'legend', `第 ${index + 1} 題`);
+      addText(card, 'p', q.question_text || '（題目文字尚未填寫）');
+
+      const options = getOptions(q.options);
+      const groupName = `quiz-answer-${q.id}`;
+
+      if (!options.length) {
+        addText(card, 'p', '這題目前沒有可顯示的選項。');
+      }
+
+      options.forEach(option => {
+        const label = document.createElement('label');
+        label.style.cssText =
+          'display:flex;gap:8px;align-items:flex-start;margin:10px 0;cursor:pointer';
+
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = groupName;
+        radio.value = option.value;
+        radio.style.marginTop = '4px';
+
+        label.append(radio, document.createTextNode(
+          `${option.value}. ${option.label}`
+        ));
+        card.appendChild(label);
+      });
+
+      questionsBox.appendChild(card);
+    });
+
+    submitButton.hidden = activeQuestions.length === 0;
+  }
+
+  startButton.addEventListener('click', async () => {
+    if (busy) return;
+    busy = true;
+    startButton.disabled = true;
+    submitButton.disabled = false;
+    activeAttempt = null;
+    activeQuestions = [];
+    questionsBox.replaceChildren();
+    resultBox.replaceChildren();
+    submitButton.hidden = true;
+
+    try {
+      const client = getSupabase();
+      const { data: sessionData, error: sessionError } =
+        await client.auth.getSession();
+
+      if (sessionError) throw sessionError;
+      if (!sessionData.session) {
+        throw new Error('請先登入學生帳號，再開始測驗。');
+      }
+
+
+const stage = $('studentQuizStage').value;
+const grade = $('studentQuizGrade').value;
+const subject = $('quizSubject').value;
+const limit = Number($('quizCount').value);
+
+say('正在從雲端題庫載入題目……');
+
+const { data, error } = await client.rpc('start_quiz_by_grade', {
+  p_stage: stage,
+  p_grade: grade,
+  p_subject: subject,
+  p_limit: limit
+});
+
+if (error) throw error;
+
+activeAttempt = data.attempt_id;
+activeQuestions = data.questions || [];
+
+if (!activeQuestions.length) {
+  throw new Error('目前沒有符合所選年級與科目的已發布題目。');
+}
+
+
+      renderQuestions();
+      say(`已載入 ${activeQuestions.length} 題，請完成作答後提交。`);
+    } catch (error) {
+      say(error.message || '開始測驗失敗，請稍後再試。');
+    } finally {
+      busy = false;
+      startButton.disabled = false;
+    }
+  });
+
+  submitButton.addEventListener('click', async () => {
+    if (busy || !activeAttempt || !activeQuestions.length) return;
+
+    const answers = {};
+    let unanswered = 0;
+
+    activeQuestions.forEach(q => {
+      const selected = root.querySelector(
+        `input[name="quiz-answer-${CSS.escape(String(q.id))}"]:checked`
+      );
+      if (selected) {
+        answers[String(q.id)] = selected.value;
+      } else {
+        unanswered++;
+      }
+    });
+
+    if (unanswered > 0 &&
+        !confirm(`還有 ${unanswered} 題未作答，確定要交卷嗎？`)) {
+      return;
+    }
+
+    busy = true;
+    submitButton.disabled = true;
+    startButton.disabled = true;
+
+    try {
+      say('正在提交答案並由雲端判分……');
+
+      const client = getSupabase();
+      const { data, error } = await client.rpc('submit_quiz', {
+        p_attempt_id: activeAttempt,
+        p_answers: answers
+      });
+
+      if (error) throw error;
+
+      // 只顯示伺服器回傳的成績，不在瀏覽器比對正確答案
+      resultBox.replaceChildren();
+      addText(resultBox, 'h3', '✅ 測驗完成');
+      addText(resultBox, 'p', `答對：${data.correct} / ${data.total} 題`);
+      addText(resultBox, 'p', `得分：${data.score} 分`);
+
+      questionsBox.querySelectorAll('input').forEach(input => {
+        input.disabled = true;
+      });
+
+      submitButton.hidden = true;
+      activeAttempt = null;
+      say('成績已由 Supabase 判定並記錄。');
+    } catch (error) {
+      say(error.message || '提交失敗，請確認網路後再試。');
+      submitButton.disabled = false;
+    } finally {
+      busy = false;
+      startButton.disabled = false;
+    }
+  });
+})();
+</script>
+ 
+<section id="quizHistory" class="card">
+  <h2>📚 我的測驗歷史紀錄</h2>
+  <button id="loadQuizHistory" type="button">
+    載入測驗紀錄
+  </button>
+  <p id="quizHistoryMessage" role="status"></p>
+
+  <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr>
+          <th>交卷時間</th>
+          <th>科目</th>
+          <th>答對題數</th>
+          <th>總題數</th>
+          <th>得分</th>
+        </tr>
+      </thead>
+      <tbody id="quizHistoryRows">
+        <tr>
+          <td colspan="5">按「載入測驗紀錄」查看紀錄。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+window.addEventListener('load', () => {
+  const client = window.studySupabase;
+  const button = document.getElementById('loadQuizHistory');
+  const message = document.getElementById('quizHistoryMessage');
+  const rows = document.getElementById('quizHistoryRows');
+
+  if (!client || !button || !message || !rows) {
+    console.warn('測驗歷史紀錄區或 Supabase 尚未準備好。');
+    return;
+  }
+
+  button.addEventListener('click', async () => {
+    button.disabled = true;
+    message.textContent = '正在載入……';
+
+    try {
+      const { data: sessionData, error: sessionError } =
+        await client.auth.getSession();
+
+      if (sessionError) throw sessionError;
+
+      if (!sessionData.session) {
+        message.textContent = '請先登入學生帳號。';
+        return;
+      }
+
+      const { data, error } = await client.rpc(
+        'get_my_quiz_history',
+        { p_limit: 20 }
+      );
+
+      if (error) throw error;
+
+      rows.replaceChildren();
+
+      if (!data || data.length === 0) {
+        message.textContent = '目前沒有已提交的測驗紀錄。';
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 5;
+        td.textContent = '尚無紀錄';
+        tr.appendChild(td);
+        rows.appendChild(tr);
+        return;
+      }
+
+      data.forEach(item => {
+        const tr = document.createElement('tr');
+        const values = [
+          item.submitted_at
+            ? new Date(item.submitted_at).toLocaleString('zh-TW')
+            : '—',
+          item.subject ?? '—',
+          item.correct_count ?? 0,
+          item.total_questions ?? 0,
+          item.score == null ? '—' : Number(item.score).toFixed(2)
+        ];
+
+        values.forEach(value => {
+          const td = document.createElement('td');
+          td.textContent = String(value);
+          tr.appendChild(td);
+        });
+
+        rows.appendChild(tr);
+      });
+
+      message.textContent = `已載入 ${data.length} 筆紀錄。`;
+    } catch (error) {
+      console.error(error);
+      message.textContent = '載入失敗：' + (error.message || '請稍後再試。');
+    } finally {
+      button.disabled = false;
+    }
+  });
+});
+</script>
+</body>
+</html>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const stage = $('aiStage'), grade = $('aiGrade'), subject = $('aiSubject');
+  const count = $('aiCount'), difficulty = $('aiDifficulty'), type = $('aiType');
+  const topic = $('aiTopic'), button = $('aiGenerateBtn'), message = $('aiQuestionMsg');
+  const preview = $('aiQuestionPreview'), saveButton = $('aiSaveBtn'), discardButton = $('aiDiscardBtn');
+  if (!button || button.dataset.bound) return;
+  button.dataset.bound = '1';
+  let draft = [];
+  const grades = {
+    '國小':['國小一年級','國小二年級','國小三年級','國小四年級','國小五年級','國小六年級'],
+    '國中':['國中七年級','國中八年級','國中九年級'],
+    '高中':['高中一年級','高中二年級','高中三年級']
+  };
+  stage.addEventListener('change', () => {
+    const old = grade.value;
+    grade.replaceChildren(...grades[stage.value].map(g => {
+      const o = document.createElement('option'); o.value = g; o.textContent = g; return o;
+    }));
+    if (grades[stage.value].includes(old)) grade.value = old;
+  });
+  function showDraft(){
+    preview.replaceChildren();
+    draft.forEach((q,i) => {
+      const card=document.createElement('article');
+      card.className='question';
+      const title=document.createElement('h3'); title.textContent=`${i+1}. ${q.question}`; card.appendChild(title);
+      q.options.forEach((o,j)=>{const p=document.createElement('p');p.textContent=`${String.fromCharCode(65+j)}. ${o}`;card.appendChild(p)});
+      const answer=document.createElement('p');answer.textContent=`正確答案：${q.options[q.answer]}`;card.appendChild(answer);
+      const exp=document.createElement('p');exp.className='muted';exp.textContent=`解析：${q.explanation||'尚無解析'}`;card.appendChild(exp);
+      preview.appendChild(card);
+    });
+    saveButton.classList.toggle('hidden',!draft.length);
+    discardButton.classList.toggle('hidden',!draft.length);
+  }
+  button.addEventListener('click', async()=>{
+    const client=window.studySupabase;
+    if(!client){message.textContent='Supabase 尚未初始化，請先登入並確認 Supabase 設定。';return;}
+    button.disabled=true; saveButton.disabled=true;
+    message.textContent='正在請 AI 產生題目……'; preview.replaceChildren(); draft=[];
+    try{
+      const {data:sessionData,error:sessionError}=await client.auth.getSession();
+      if(sessionError) throw sessionError;
+      if(!sessionData.session) throw new Error('請先登入教師帳號。');
+      const {data:profile,error:profileError}=await client.from('profiles').select('role').eq('id',sessionData.session.user.id).single();
+      if(profileError || profile?.role!=='teacher') throw new Error('只有已獲授權的教師帳號可以使用 AI 出題。');
+      const {data,error}=await client.functions.invoke('ai-generate-questions',{
+        body:{
+          stage:stage.value, grade:grade.value, subject:subject.value,
+          count:Number(count.value), difficulty:difficulty.value,
+          questionType:type.value, topic:topic.value.trim()
+        }
+      });
+      if(error) throw new Error(error.message||'AI 服務呼叫失敗。');
+      const rows=Array.isArray(data)?data:data?.questions;
+      if(!Array.isArray(rows)||!rows.length) throw new Error('AI 回傳格式不正確，預期為 { questions: [...] }。');
+      draft=rows.slice(0,Number(count.value)).map(q=>{
+        if(!q.question||!Array.isArray(q.options)||q.options.length<2||!Number.isInteger(Number(q.answer))||!q.options[Number(q.answer)]) throw new Error('AI 回傳的某題格式不完整，請重新產生。');
+        return {stage:stage.value,grade:grade.value,subject:subject.value,question:String(q.question),
+          options:q.options.map(String),answer:Number(q.answer),explanation:String(q.explanation||'AI 尚未提供解析。'),source:'AI 自動出題',difficulty:difficulty.value};
+      });
+      showDraft();message.textContent=`已產生 ${draft.length} 題。請檢查題目與答案，確認無誤後再加入題庫。`;
+    }catch(err){
+      message.textContent='出題失敗：'+(err.message||'請稍後再試。')+'（請確認已部署 Cloudflare Workers AI 版 ai-generate-questions Edge Function，且已設定 CLOUDFLARE_ACCOUNT_ID 與 CLOUDFLARE_API_TOKEN）';
+    }finally{button.disabled=false;saveButton.disabled=false;}
+  });
+  saveButton.addEventListener('click',()=>{
+    if(!draft.length)return;
+    bank.push(...draft);
+    state.bank=bank; save();
+    message.textContent=`已將 ${draft.length} 題加入題庫！目前題庫共 ${bank.length} 題。`;
+    draft=[];showDraft();
+  });
+  discardButton.addEventListener('click',()=>{draft=[];showDraft();message.textContent='已捨棄尚未加入題庫的預覽。';});
+})();
+</script>
+</body>
+
+</html>
