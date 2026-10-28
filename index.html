@@ -85,6 +85,8 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
 <section id="page-wrong" class="page hidden"><div class="card"><h2>🔁 錯題重練</h2><p class="muted">答對後會從待重練清單移除；重練答對每題加 5 分。</p><div id="wrongArea"></div><div class="actions"><button class="primary" id="startWrong">開始重練</button><button class="ghost" id="clearWrong">清除錯題清單</button></div></div></section>
 <section id="page-ranking" class="page hidden"><div class="card"><h2>🏆 積分排行榜</h2><p class="muted">此排行榜只統計目前這個瀏覽器儲存的玩家。若要讓不同裝置／不同玩家共同排名，需要另外架設具備登入與資料庫的後端服務。</p><div class="grid"><div class="span-6"><label for="rankPeriod">排行榜類型</label><select id="rankPeriod"><option value="all">累積總積分</option><option value="week">本週積分</option><option value="day">今日積分</option></select></div><div class="span-6"><label for="rankStage">學習階段</label><select id="rankStage"><option value="all">全部階段</option><option value="國小">國小</option><option value="國中">國中</option><option value="高中">高中</option></select></div></div><div id="rankArea"></div></div></section>
 <section id="page-manage" class="page hidden"><div class="grid"><div class="card span-6"><h2>匯入題庫 JSON</h2><p class="muted">可以匯入你有權使用的題目。匯入題目會加入目前題庫。</p><label for="questionFile">選擇 JSON 檔案</label><input id="questionFile" type="file" accept=".json,application/json"><div class="actions"><button class="primary" id="importQuestions">匯入題庫</button><button class="secondary" id="downloadTemplate">下載範例題庫格式</button></div><p id="importMessage" class="muted"></p></div>
+<div class="card span-6"><h2>目前題庫</h2><div class="stats"><div class="stat"><span class="muted">題目總數</span><strong id="bankCount">0</strong></div><div class="stat"><span class="muted">自訂題目</span><strong id="customCount">0</strong></div><div class="stat"><span class="muted">科目數</span><strong>5</strong></div></div><div class="actions"><button class="secondary" id="exportQuestions">匯出目前題庫</button><button class="danger" id="resetQuestions">還原內建題庫</button></div></div>
+
 <div class="card span-12" id="aiQuestionCard">
   <h2>🤖 AI 自動出題</h2>
   <p class="muted">設定年級、科目與難度，讓 AI 產生選擇題與解析；確認後會加入目前題庫，學生即可作答。</p>
@@ -98,12 +100,10 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
     <div class="span-12"><label for="aiTopic">單元／主題（選填）</label><input id="aiTopic" placeholder="例如：一元一次方程式、光合作用、英文現在完成式"></div>
   </div>
   <div class="actions"><button class="primary" id="aiGenerateBtn" type="button">✨ AI 產生題目</button></div>
-  <p id="aiQuestionMsg" class="muted" role="status" aria-live="polite">使用 Cloudflare Workers AI 免費額度；需部署更新後的 ai-generate-questions Edge Function。Cloudflare API Token 只放在 Supabase Secrets，勿放進 HTML。</p>
+  <p id="aiQuestionMsg" class="muted" role="status" aria-live="polite">需先在 Supabase 部署 ai-generate-questions Edge Function；請勿把 AI API 金鑰放在前端 HTML。</p>
   <div id="aiQuestionPreview"></div>
   <div class="actions"><button class="secondary hidden" id="aiSaveBtn" type="button">加入題庫</button><button class="ghost hidden" id="aiDiscardBtn" type="button">捨棄預覽</button></div>
 </div>
-
-<div class="card span-6"><h2>目前題庫</h2><div class="stats"><div class="stat"><span class="muted">題目總數</span><strong id="bankCount">0</strong></div><div class="stat"><span class="muted">自訂題目</span><strong id="customCount">0</strong></div><div class="stat"><span class="muted">科目數</span><strong>5</strong></div></div><div class="actions"><button class="secondary" id="exportQuestions">匯出目前題庫</button><button class="danger" id="resetQuestions">還原內建題庫</button></div></div>
 <div class="card span-12"><h2>超大型題庫規劃：100,000,000,000 題</h2><div class="notice">網站已保留大量題庫匯入／匯出功能，但 1,000 億題不能直接塞進單一 HTML 或瀏覽器儲存空間。正式規模需要伺服器、資料庫、分批載入、索引與題目生成服務。以下示範版可管理你匯入的題目，並非已內建 1,000 億道人工編寫題目。</div></div><div class="card span-12"><h2>題庫 JSON 格式</h2><p class="muted">每題需包含 stage、grade、subject、question、options、answer、explanation。answer 是 options 的從 0 開始索引（第一個選項為 0）。</p><pre style="white-space:pre-wrap;background:#f4f6fb;padding:12px;border-radius:10px;overflow:auto">[
   {
     "stage": "國中",
@@ -960,8 +960,6 @@ window.addEventListener('load', () => {
   });
 });
 </script>
-</body>
-</html>
 
 <script>
 (function(){
@@ -1027,7 +1025,7 @@ window.addEventListener('load', () => {
       });
       showDraft();message.textContent=`已產生 ${draft.length} 題。請檢查題目與答案，確認無誤後再加入題庫。`;
     }catch(err){
-      message.textContent='出題失敗：'+(err.message||'請稍後再試。')+'（請確認已部署 Cloudflare Workers AI 版 ai-generate-questions Edge Function，且已設定 CLOUDFLARE_ACCOUNT_ID 與 CLOUDFLARE_API_TOKEN）';
+      message.textContent='出題失敗：'+(err.message||'請稍後再試。')+'（需部署 Supabase Edge Function：ai-generate-questions）';
     }finally{button.disabled=false;saveButton.disabled=false;}
   });
   saveButton.addEventListener('click',()=>{
@@ -1040,6 +1038,10 @@ window.addEventListener('load', () => {
   discardButton.addEventListener('click',()=>{draft=[];showDraft();message.textContent='已捨棄尚未加入題庫的預覽。';});
 })();
 </script>
+
+</body>
+</html>
+
 </body>
 
 </html>
