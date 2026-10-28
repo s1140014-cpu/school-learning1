@@ -33,7 +33,8 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
   <h2>🔐 全學段學習挑戰站</h2><p class="muted">請選擇身分並登入。教師可管理題庫，學生可參加測驗。</p>
   <div class="role-switch"><button class="primary" id="chooseStudent" type="button">🎒 學生端</button><button class="secondary" id="chooseTeacher" type="button">🧑‍🏫 教師端</button></div>
   <label for="loginUser">電子郵件</label><input id="loginUser" type="email" autocomplete="email" placeholder="name@example.com" required>
-  <label for="loginPass">密碼（至少 8 個字元）</label><input id="loginPass" type="password" autocomplete="current-password" minlength="8" placeholder="輸入密碼">\n  <label for="displayName">顯示名稱（註冊時填寫）</label><input id="displayName" autocomplete="nickname" placeholder="例如：小明">
+  <label for="loginPass">密碼（至少 8 個字元）</label><input id="loginPass" type="password" autocomplete="current-password" minlength="8" placeholder="輸入密碼">
+  <label for="displayName">顯示名稱（註冊時填寫）</label><input id="displayName" autocomplete="nickname" placeholder="例如：小明">
 <div class="actions">
   <button class="primary" id="loginBtn" type="button">登入</button>
   <button class="secondary" id="registerBtn" type="button">建立學生帳號</button>
@@ -80,13 +81,11 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
 </div></section>
 <section id="page-quiz" class="page hidden">
 <div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><div><h2 id="quizTitle">測驗</h2><p class="muted" id="quizMeta"></p></div><span class="pill" id="progressPill">準備開始</span></div>
-<div id="quizArea"></div><div class="actions"><button id="submitQuiz" class="primary">交卷並看解析</button><button id="nextQuiz" class="secondary hidden">再做一回</button><button id="toWrong" class="ghost">前往錯題重練</button></div><p class="muted" id="quizMessage"></p></div>
+<div id="quizArea"></div><div class="actions"><button id="submitQuiz" class="primary">交卷並看解析</button><button id="nextQuiz" class="secondary hidden">再做一回</button><button id="toWrong" class="ghost">前往錯題重練</button></div><p class="muted" id="localQuizMessage"></p></div>
 </section>
 <section id="page-wrong" class="page hidden"><div class="card"><h2>🔁 錯題重練</h2><p class="muted">答對後會從待重練清單移除；重練答對每題加 5 分。</p><div id="wrongArea"></div><div class="actions"><button class="primary" id="startWrong">開始重練</button><button class="ghost" id="clearWrong">清除錯題清單</button></div></div></section>
 <section id="page-ranking" class="page hidden"><div class="card"><h2>🏆 積分排行榜</h2><p class="muted">此排行榜只統計目前這個瀏覽器儲存的玩家。若要讓不同裝置／不同玩家共同排名，需要另外架設具備登入與資料庫的後端服務。</p><div class="grid"><div class="span-6"><label for="rankPeriod">排行榜類型</label><select id="rankPeriod"><option value="all">累積總積分</option><option value="week">本週積分</option><option value="day">今日積分</option></select></div><div class="span-6"><label for="rankStage">學習階段</label><select id="rankStage"><option value="all">全部階段</option><option value="國小">國小</option><option value="國中">國中</option><option value="高中">高中</option></select></div></div><div id="rankArea"></div></div></section>
 <section id="page-manage" class="page hidden"><div class="grid"><div class="card span-6"><h2>匯入題庫 JSON</h2><p class="muted">可以匯入你有權使用的題目。匯入題目會加入目前題庫。</p><label for="questionFile">選擇 JSON 檔案</label><input id="questionFile" type="file" accept=".json,application/json"><div class="actions"><button class="primary" id="importQuestions">匯入題庫</button><button class="secondary" id="downloadTemplate">下載範例題庫格式</button></div><p id="importMessage" class="muted"></p></div>
-<div class="card span-6"><h2>目前題庫</h2><div class="stats"><div class="stat"><span class="muted">題目總數</span><strong id="bankCount">0</strong></div><div class="stat"><span class="muted">自訂題目</span><strong id="customCount">0</strong></div><div class="stat"><span class="muted">科目數</span><strong>5</strong></div></div><div class="actions"><button class="secondary" id="exportQuestions">匯出目前題庫</button><button class="danger" id="resetQuestions">還原內建題庫</button></div></div>
-
 <div class="card span-12" id="aiQuestionCard">
   <h2>🤖 AI 自動出題</h2>
   <p class="muted">設定年級、科目與難度，讓 AI 產生選擇題與解析；確認後會加入目前題庫，學生即可作答。</p>
@@ -100,10 +99,12 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;bor
     <div class="span-12"><label for="aiTopic">單元／主題（選填）</label><input id="aiTopic" placeholder="例如：一元一次方程式、光合作用、英文現在完成式"></div>
   </div>
   <div class="actions"><button class="primary" id="aiGenerateBtn" type="button">✨ AI 產生題目</button></div>
-  <p id="aiQuestionMsg" class="muted" role="status" aria-live="polite">需先在 Supabase 部署 ai-generate-questions Edge Function；請勿把 AI API 金鑰放在前端 HTML。</p>
+  <p id="aiQuestionMsg" class="muted" role="status" aria-live="polite">使用 Cloudflare Workers AI 免費額度；需部署更新後的 ai-generate-questions Edge Function。Cloudflare API Token 只放在 Supabase Secrets，勿放進 HTML。</p>
   <div id="aiQuestionPreview"></div>
   <div class="actions"><button class="secondary hidden" id="aiSaveBtn" type="button">加入題庫</button><button class="ghost hidden" id="aiDiscardBtn" type="button">捨棄預覽</button></div>
 </div>
+
+<div class="card span-6"><h2>目前題庫</h2><div class="stats"><div class="stat"><span class="muted">題目總數</span><strong id="bankCount">0</strong></div><div class="stat"><span class="muted">自訂題目</span><strong id="customCount">0</strong></div><div class="stat"><span class="muted">科目數</span><strong>5</strong></div></div><div class="actions"><button class="secondary" id="exportQuestions">匯出目前題庫</button><button class="danger" id="resetQuestions">還原內建題庫</button></div></div>
 <div class="card span-12"><h2>超大型題庫規劃：100,000,000,000 題</h2><div class="notice">網站已保留大量題庫匯入／匯出功能，但 1,000 億題不能直接塞進單一 HTML 或瀏覽器儲存空間。正式規模需要伺服器、資料庫、分批載入、索引與題目生成服務。以下示範版可管理你匯入的題目，並非已內建 1,000 億道人工編寫題目。</div></div><div class="card span-12"><h2>題庫 JSON 格式</h2><p class="muted">每題需包含 stage、grade、subject、question、options、answer、explanation。answer 是 options 的從 0 開始索引（第一個選項為 0）。</p><pre style="white-space:pre-wrap;background:#f4f6fb;padding:12px;border-radius:10px;overflow:auto">[
   {
     "stage": "國中",
@@ -125,7 +126,6 @@ function setRole(role){chosenRole=role;document.querySelector('#chooseStudent').
 document.querySelector('#chooseStudent').onclick=()=>setRole('student');
 document.querySelector('#chooseTeacher').onclick=()=>setRole('teacher');
 function enterApp(user,role){activeUser={user,role};sessionStorage.setItem('studyChallenge_session',JSON.stringify(activeUser));document.querySelector('#loginScreen').classList.add('hidden');document.querySelector('#manageTab').classList.toggle('hidden',role!=='teacher');document.querySelector('#nickname').value=user;localStorage.setItem('studyNickname',user);document.querySelector('header p').textContent=`${role==='teacher'?'教師端':'學生端'}｜目前帳號：${user}｜國小・國中・高中全學段學習挑戰站`;go('home')}
-document.querySelector('#logoutBtn').onclick=async()=>{try{await window.studySupabase?.auth.signOut()}catch(e){}sessionStorage.removeItem('studyChallenge_session');activeUser=null;document.querySelector('#loginScreen').classList.remove('hidden');document.querySelector('#loginPass').value='';setRole('student')};
 setRole('student');
 const defaultQuestions=[
 {stage:'國小',grade:'國小五年級',subject:'數學',question:'一盒彩色筆有 12 枝，買了 3 盒共有幾枝？',options:['15 枝','24 枝','36 枝','48 枝'],answer:2,explanation:'12 × 3 = 36，所以共有 36 枝。',source:'自編練習題'},
@@ -166,7 +166,7 @@ if(!pool.length){document.querySelector('#quizTitle').textContent=kind==='wrong'
 const countChoice=document.querySelector('#questionCount')?.value||'10';
 const requested=countChoice==='all'?pool.length:Number(countChoice);
 current=pool.sort(()=>Math.random()-.5).slice(0,Math.min(requested,pool.length));
-document.querySelector('#quizTitle').textContent=kind==='wrong'?'錯題重練':kind==='daily'?'每日挑戰':'開始測驗';document.querySelector('#quizMeta').textContent=`${g}｜${s}｜共 ${current.length} 題`;document.querySelector('#progressPill').textContent=`${current.length} 題`;document.querySelector('#submitQuiz').classList.remove('hidden');document.querySelector('#nextQuiz').classList.add('hidden');document.querySelector('#quizMessage').textContent='';
+document.querySelector('#quizTitle').textContent=kind==='wrong'?'錯題重練':kind==='daily'?'每日挑戰':'開始測驗';document.querySelector('#quizMeta').textContent=`${g}｜${s}｜共 ${current.length} 題`;document.querySelector('#progressPill').textContent=`${current.length} 題`;document.querySelector('#submitQuiz').classList.remove('hidden');document.querySelector('#nextQuiz').classList.add('hidden');document.querySelector('#localQuizMessage').textContent='';
 document.querySelector('#quizArea').innerHTML=current.map((q,i)=>`<div class="question" data-q="${i}"><h3>${i+1}. ${esc(q.question)}</h3>${q.options.map((o,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}"><span>${esc(o)}</span></label>`).join('')}<div class="feedback hidden" id="fb${i}"></div></div>`).join('');
 go('quiz')
 }
@@ -183,7 +183,7 @@ let completion=20;earned+=completion;state.points=(state.points||0)+earned;state
 const name=playerName();let p=state.players.find(x=>x.name===name&&x.stage===stageOf(getGrade()));if(!p){p={name,stage:stageOf(getGrade()),points:0,day:{},week:{}};state.players.push(p)}p.points+=earned;p.day[date]=(p.day[date]||0)+earned;
 let now=new Date(),monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));let weekKey=monday.toLocaleDateString('sv-SE');p.week[weekKey]=(p.week[weekKey]||0)+earned;
 if(mode==='daily'&&localStorage.getItem('dailyDone')!==date){earned+=10;state.points+=10;p.points+=10;p.day[date]+=10;p.week[weekKey]+=10;state.history[state.history.length-1].earned+=10;localStorage.setItem('dailyDone',date)}
-answered=true;document.querySelector('#submitQuiz').classList.add('hidden');document.querySelector('#nextQuiz').classList.remove('hidden');document.querySelector('#progressPill').textContent=`答對 ${correct}/${current.length}`;document.querySelector('#quizMessage').textContent=`本回答對 ${correct} 題，獲得 ${earned} 分（包含完成獎勵）。`;save()
+answered=true;document.querySelector('#submitQuiz').classList.add('hidden');document.querySelector('#nextQuiz').classList.remove('hidden');document.querySelector('#progressPill').textContent=`答對 ${correct}/${current.length}`;document.querySelector('#localQuizMessage').textContent=`本回答對 ${correct} 題，獲得 ${earned} 分（包含完成獎勵）。`;save()
 };
 document.querySelector('#nextQuiz').onclick=()=>startQuiz(mode);
 function renderWrong(){let area=document.querySelector('#wrongArea');if(!state.wrong?.length){area.innerHTML='<div class="empty">太好了！目前沒有待重練錯題。</div>';return}area.innerHTML=state.wrong.map((q,i)=>`<div class="question"><span class="pill">${esc(q.grade)}｜${esc(q.subject)}</span><p><strong>${i+1}. ${esc(q.question)}</strong></p><p class="muted">已加入錯題清單，按「開始重練」再試一次。</p></div>`).join('')}
@@ -399,6 +399,9 @@ document.querySelector('#resendVerificationBtn').onclick = async () => {
 </section>
 
 
+<section id="cloudQuestionBank" class="card" style="max-width:1080px;margin:24px auto;padding:20px">
+  <h2>☁️ 雲端已發布題庫瀏覽</h2>
+  <p class="muted">此區只顯示已發布題目的題幹與選項，不查詢正確答案或解析。</p>
   <label for="qbSubject">科目：</label>
   <select id="qbSubject">
     <option>國文</option>
@@ -577,35 +580,7 @@ document.querySelector('#resendVerificationBtn').onclick = async () => {
 })();
 </script>
 
-<section id="studentQuiz" style="max-width:850px;margin:24px auto;padding:20px;background:#fff;border:1px solid #dbe3f0;border-radius:16px;color:#172033;font-family:Arial,sans-serif">
-  <h2>📝 學生線上測驗</h2>
-  <p>選擇科目開始測驗。提交後會顯示成績，不會直接傳回正確答案。</p>
-
-  <label for="quizSubject">測驗科目：</label>
-  <select id="quizSubject" style="padding:10px;border-radius:8px">
-    <option>國文</option>
-    <option>英文</option>
-    <option>數學</option>
-    <option>自然</option>
-    <option>社會</option>
-    <option>資訊</option>
-    <option>其他</option>
-  </select>
-
-  <label for="quizCount">題數：</label>
-  <select id="quizCount" style="padding:10px;border-radius:8px">
-    <option value="5">5 題</option>
-    <option value="10" selected>10 題</option>
-    <option value="20">20 題</option>
-  </select>
-
-  <button id="quizStart" type="button" style="padding:10px 16px;background:#315efb;color:white;border:0;border-radius:8px;cursor:pointer">開始測驗</button>
-
-  <p id="quizMessage" role="status" aria-live="polite"></p>
-  <div id="quizQuestions"></div>
-  <button id="quizSubmit" type="button" hidden style="padding:11px 18px;background:#16804a;color:white;border:0;border-radius:8px;cursor:pointer">提交答案</button>
-  <div id="quizResult" role="status" aria-live="polite" style="margin-top:18px"></div>
-</section>
+<!-- 已移除重複的 studentQuiz 區塊；共用第一個含學段與年級選擇的區塊。 -->
 
 <script type="module">
 (() => {
@@ -1025,7 +1000,7 @@ window.addEventListener('load', () => {
       });
       showDraft();message.textContent=`已產生 ${draft.length} 題。請檢查題目與答案，確認無誤後再加入題庫。`;
     }catch(err){
-      message.textContent='出題失敗：'+(err.message||'請稍後再試。')+'（需部署 Supabase Edge Function：ai-generate-questions）';
+      message.textContent='出題失敗：'+(err.message||'請稍後再試。')+'（請確認已部署 Cloudflare Workers AI 版 ai-generate-questions Edge Function，且已設定 CLOUDFLARE_ACCOUNT_ID 與 CLOUDFLARE_API_TOKEN）';
     }finally{button.disabled=false;saveButton.disabled=false;}
   });
   saveButton.addEventListener('click',()=>{
@@ -1038,10 +1013,5 @@ window.addEventListener('load', () => {
   discardButton.addEventListener('click',()=>{draft=[];showDraft();message.textContent='已捨棄尚未加入題庫的預覽。';});
 })();
 </script>
-
 </body>
-</html>
-
-</body>
-
 </html>
